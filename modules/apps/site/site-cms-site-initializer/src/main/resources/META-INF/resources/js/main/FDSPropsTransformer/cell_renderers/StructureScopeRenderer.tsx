@@ -7,8 +7,8 @@ import Badge from '@clayui/badge';
 import React, {useEffect, useState} from 'react';
 
 import SpaceService from '../../../services/SpaceService';
-import {LogoColor} from '../../components/SpaceSticker';
-import SpacesDisplay, {Space} from '../../components/SpacesDisplay';
+import {Space} from '../../../types/Space';
+import SpacesDisplay from '../../components/SpacesDisplay';
 
 interface ObjectDefinitionSetting {
 	name: string;
@@ -43,37 +43,26 @@ const StructureScopeRenderer = ({
 }) => {
 	const [spaces, setSpaces] = useState<Space[]>([]);
 
-	const fetchSpaces = async (spaceExternalReferenceCodes: string[]) => {
-		if (spaceExternalReferenceCodes.length) {
-			const spaces = await Promise.all(
-				spaceExternalReferenceCodes.map(
-					async (spaceExternalReferenceCode) => {
-						const space = await SpaceService.getSpace(
-							spaceExternalReferenceCode
-						);
-
-						return {
-							logoColor: space.settings?.logoColor as LogoColor,
-							name: space.name,
-						};
-					}
-				)
-			);
-
-			setSpaces(spaces);
-		}
-	};
-
 	const spaceExternalReferenceCodes = getSpaceExternalReferenceCodes(
 		itemData.objectDefinitionSettings
 	);
 
 	useEffect(() => {
-		fetchSpaces(spaceExternalReferenceCodes);
-	}, [spaceExternalReferenceCodes]);
+		const fetchSpaces = async () => {
+			const response = await SpaceService.getSpaces();
 
-	if (spaces.length) {
-		return <SpacesDisplay spaces={spaces} />;
+			setSpaces(response);
+		};
+
+		fetchSpaces();
+	}, []);
+
+	const structureSpaces = spaces.filter((space) =>
+		spaceExternalReferenceCodes.includes(space.externalReferenceCode)
+	);
+
+	if (structureSpaces.length) {
+		return <SpacesDisplay spaces={structureSpaces} />;
 	}
 
 	return (
