@@ -3,9 +3,13 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import ClaySticker from '@clayui/sticker';
+
+export type LogoColor = React.ComponentProps<typeof ClaySticker>['displayType'];
+
 export type Space = {
 	externalReferenceCode: string;
 	id: string;
 	name: string;
-	settings?: {logoColor: string};
+	settings?: {logoColor: LogoColor};
 };
