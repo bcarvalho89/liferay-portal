@@ -6,7 +6,7 @@
 import ClaySticker from '@clayui/sticker';
 import React from 'react';
 
-export type LogoColor = React.ComponentProps<typeof ClaySticker>['displayType'];
+import {LogoColor} from '../../types/Space';
 
 export const logoColors: LogoColor[] = [
 	'outline-0',
