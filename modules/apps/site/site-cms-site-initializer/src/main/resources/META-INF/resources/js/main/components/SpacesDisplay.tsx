@@ -7,13 +7,9 @@ import Badge from '@clayui/badge';
 import {ClayTooltipProvider} from '@clayui/tooltip';
 import React from 'react';
 
+import {Space} from '../../types/Space';
 import {convertArrayToFormattedString} from '../util/convertArrayToFormattedString';
-import SpaceSticker, {LogoColor} from './SpaceSticker';
-
-export interface Space {
-	logoColor: LogoColor;
-	name: string;
-}
+import SpaceSticker from './SpaceSticker';
 
 interface SpaceDisplayProps {
 	spaces: Space[];
@@ -31,7 +27,7 @@ export default function SpacesDisplay(props: SpaceDisplayProps) {
 	const firstSpaceElement = (
 		<span className="align-items-center d-flex space-renderer-sticker">
 			<SpaceSticker
-				displayType={firstSpace.logoColor}
+				displayType={firstSpace.settings?.logoColor}
 				name={firstSpace.name}
 				size="sm"
 			/>
