@@ -18,7 +18,13 @@ export default function SpacesDisplay(props: SpaceDisplayProps) {
 	const {spaces} = props;
 
 	if (!spaces.length) {
-		return null;
+		return (
+			<Badge
+				className="badge-pill"
+				displayType="secondary"
+				label={Liferay.Language.get('all-spaces')}
+			/>
+		);
 	}
 
 	const [firstSpace, ...otherSpaces] = spaces;
