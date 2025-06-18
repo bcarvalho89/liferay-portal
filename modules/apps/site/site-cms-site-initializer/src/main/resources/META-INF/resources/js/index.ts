@@ -16,6 +16,8 @@ export {default as CategoryUsagesFDSPropsTransformer} from './main/FDSPropsTrans
 export {default as ContentsFDSPropsTransformer} from './main/FDSPropsTransformer/ContentsFDSPropsTransformer';
 export {default as FilesFDSPropsTransformer} from './main/FDSPropsTransformer/FilesFDSPropsTransformer';
 export {default as FolderFDSPropsTransformer} from './main/FDSPropsTransformer/FolderFDSPropsTransformer';
+export {default as MembersFDSPropsTransformer} from './main/FDSPropsTransformer/MembersFDSPropsTransformer';
+export {default as SitesFDSPropsTransformer} from './main/FDSPropsTransformer/SitesFDSPropsTransformer';
 export {default as StructureUsagesFDSPropsTransformer} from './main/FDSPropsTransformer/StructureUsagesFDSPropsTransformer';
 export {default as StructuresFDSPropsTransformer} from './main/FDSPropsTransformer/StructuresFDSPropsTransformer';
 export {default as TagUsagesFDSPropsTransformer} from './main/FDSPropsTransformer/TagUsagesFDSPropsTransformer';
