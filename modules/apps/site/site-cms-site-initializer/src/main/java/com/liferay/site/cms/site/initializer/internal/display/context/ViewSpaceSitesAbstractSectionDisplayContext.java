@@ -95,7 +95,7 @@ public class ViewSpaceSitesAbstractSectionDisplayContext {
 	public Map<String, Object> getHeaderProps() throws Exception {
 		return SpaceAbstractHeaderUtil.getSpaceAbstractHeaderProps(
 			_httpServletRequest, "view-all-sites", _getSpaceSitesHeaderTitle(),
-			StringPool.BLANK);
+			StringPool.BLANK, StringPool.BLANK);
 	}
 
 	private FDSActionDropdownItem _getSearchableFDSActionDropdownItem(
