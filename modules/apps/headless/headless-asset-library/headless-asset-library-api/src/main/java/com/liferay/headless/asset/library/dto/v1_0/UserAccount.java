@@ -48,6 +48,47 @@ public class UserAccount implements Serializable {
 		return ObjectMapperUtil.unsafeReadValue(UserAccount.class, json);
 	}
 
+	@io.swagger.v3.oas.annotations.media.Schema
+	public Boolean getAssetLibraryCreator() {
+		if (_assetLibraryCreatorSupplier != null) {
+			assetLibraryCreator = _assetLibraryCreatorSupplier.get();
+
+			_assetLibraryCreatorSupplier = null;
+		}
+
+		return assetLibraryCreator;
+	}
+
+	public void setAssetLibraryCreator(Boolean assetLibraryCreator) {
+		this.assetLibraryCreator = assetLibraryCreator;
+
+		_assetLibraryCreatorSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setAssetLibraryCreator(
+		UnsafeSupplier<Boolean, Exception> assetLibraryCreatorUnsafeSupplier) {
+
+		_assetLibraryCreatorSupplier = () -> {
+			try {
+				return assetLibraryCreatorUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected Boolean assetLibraryCreator;
+
+	@JsonIgnore
+	private Supplier<Boolean> _assetLibraryCreatorSupplier;
+
 	@io.swagger.v3.oas.annotations.media.Schema(
 		description = "The user's external reference code"
 	)
@@ -258,6 +299,47 @@ public class UserAccount implements Serializable {
 	@JsonIgnore
 	private Supplier<Role[]> _rolesSupplier;
 
+	@io.swagger.v3.oas.annotations.media.Schema
+	public Boolean getSpaceOwner() {
+		if (_spaceOwnerSupplier != null) {
+			spaceOwner = _spaceOwnerSupplier.get();
+
+			_spaceOwnerSupplier = null;
+		}
+
+		return spaceOwner;
+	}
+
+	public void setSpaceOwner(Boolean spaceOwner) {
+		this.spaceOwner = spaceOwner;
+
+		_spaceOwnerSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setSpaceOwner(
+		UnsafeSupplier<Boolean, Exception> spaceOwnerUnsafeSupplier) {
+
+		_spaceOwnerSupplier = () -> {
+			try {
+				return spaceOwnerUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected Boolean spaceOwner;
+
+	@JsonIgnore
+	private Supplier<Boolean> _spaceOwnerSupplier;
+
 	@Override
 	public boolean equals(Object object) {
 		if (this == object) {
@@ -284,6 +366,18 @@ public class UserAccount implements Serializable {
 		StringBundler sb = new StringBundler();
 
 		sb.append("{");
+
+		Boolean assetLibraryCreator = getAssetLibraryCreator();
+
+		if (assetLibraryCreator != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"assetLibraryCreator\": ");
+
+			sb.append(assetLibraryCreator);
+		}
 
 		String externalReferenceCode = getExternalReferenceCode();
 
@@ -365,6 +459,18 @@ public class UserAccount implements Serializable {
 			}
 
 			sb.append("]");
+		}
+
+		Boolean spaceOwner = getSpaceOwner();
+
+		if (spaceOwner != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"spaceOwner\": ");
+
+			sb.append(spaceOwner);
 		}
 
 		sb.append("}");

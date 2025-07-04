@@ -1247,6 +1247,16 @@ public abstract class BaseUserAccountResourceTestCase {
 				getAdditionalAssertFieldNames()) {
 
 			if (Objects.equals(
+					"assetLibraryCreator", additionalAssertFieldName)) {
+
+				if (userAccount.getAssetLibraryCreator() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
 					"externalReferenceCode", additionalAssertFieldName)) {
 
 				if (userAccount.getExternalReferenceCode() == null) {
@@ -1274,6 +1284,14 @@ public abstract class BaseUserAccountResourceTestCase {
 
 			if (Objects.equals("roles", additionalAssertFieldName)) {
 				if (userAccount.getRoles() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("spaceOwner", additionalAssertFieldName)) {
+				if (userAccount.getSpaceOwner() == null) {
 					valid = false;
 				}
 
@@ -1400,6 +1418,19 @@ public abstract class BaseUserAccountResourceTestCase {
 				getAdditionalAssertFieldNames()) {
 
 			if (Objects.equals(
+					"assetLibraryCreator", additionalAssertFieldName)) {
+
+				if (!Objects.deepEquals(
+						userAccount1.getAssetLibraryCreator(),
+						userAccount2.getAssetLibraryCreator())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
 					"externalReferenceCode", additionalAssertFieldName)) {
 
 				if (!Objects.deepEquals(
@@ -1445,6 +1476,17 @@ public abstract class BaseUserAccountResourceTestCase {
 			if (Objects.equals("roles", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						userAccount1.getRoles(), userAccount2.getRoles())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("spaceOwner", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						userAccount1.getSpaceOwner(),
+						userAccount2.getSpaceOwner())) {
 
 					return false;
 				}
@@ -1558,6 +1600,11 @@ public abstract class BaseUserAccountResourceTestCase {
 		sb.append(" ");
 		sb.append(operator);
 		sb.append(" ");
+
+		if (entityFieldName.equals("assetLibraryCreator")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
 
 		if (entityFieldName.equals("externalReferenceCode")) {
 			Object object = userAccount.getExternalReferenceCode();
@@ -1707,6 +1754,11 @@ public abstract class BaseUserAccountResourceTestCase {
 				"Invalid entity field " + entityFieldName);
 		}
 
+		if (entityFieldName.equals("spaceOwner")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
 		throw new IllegalArgumentException(
 			"Invalid entity field " + entityFieldName);
 	}
@@ -1752,11 +1804,13 @@ public abstract class BaseUserAccountResourceTestCase {
 	protected UserAccount randomUserAccount() throws Exception {
 		return new UserAccount() {
 			{
+				assetLibraryCreator = RandomTestUtil.randomBoolean();
 				externalReferenceCode = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
 				id = RandomTestUtil.randomLong();
 				image = StringUtil.toLowerCase(RandomTestUtil.randomString());
 				name = StringUtil.toLowerCase(RandomTestUtil.randomString());
+				spaceOwner = RandomTestUtil.randomBoolean();
 			}
 		};
 	}

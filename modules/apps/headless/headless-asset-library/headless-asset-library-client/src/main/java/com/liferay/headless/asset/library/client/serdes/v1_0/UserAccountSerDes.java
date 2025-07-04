@@ -47,6 +47,16 @@ public class UserAccountSerDes {
 
 		sb.append("{");
 
+		if (userAccount.getAssetLibraryCreator() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"assetLibraryCreator\": ");
+
+			sb.append(userAccount.getAssetLibraryCreator());
+		}
+
 		if (userAccount.getExternalReferenceCode() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -119,6 +129,16 @@ public class UserAccountSerDes {
 			sb.append("]");
 		}
 
+		if (userAccount.getSpaceOwner() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"spaceOwner\": ");
+
+			sb.append(userAccount.getSpaceOwner());
+		}
+
 		sb.append("}");
 
 		return sb.toString();
@@ -137,6 +157,15 @@ public class UserAccountSerDes {
 		}
 
 		Map<String, String> map = new TreeMap<>();
+
+		if (userAccount.getAssetLibraryCreator() == null) {
+			map.put("assetLibraryCreator", null);
+		}
+		else {
+			map.put(
+				"assetLibraryCreator",
+				String.valueOf(userAccount.getAssetLibraryCreator()));
+		}
 
 		if (userAccount.getExternalReferenceCode() == null) {
 			map.put("externalReferenceCode", null);
@@ -175,6 +204,13 @@ public class UserAccountSerDes {
 			map.put("roles", String.valueOf(userAccount.getRoles()));
 		}
 
+		if (userAccount.getSpaceOwner() == null) {
+			map.put("spaceOwner", null);
+		}
+		else {
+			map.put("spaceOwner", String.valueOf(userAccount.getSpaceOwner()));
+		}
+
 		return map;
 	}
 
@@ -193,7 +229,12 @@ public class UserAccountSerDes {
 
 		@Override
 		protected boolean parseMaps(String jsonParserFieldName) {
-			if (Objects.equals(jsonParserFieldName, "externalReferenceCode")) {
+			if (Objects.equals(jsonParserFieldName, "assetLibraryCreator")) {
+				return false;
+			}
+			else if (Objects.equals(
+						jsonParserFieldName, "externalReferenceCode")) {
+
 				return false;
 			}
 			else if (Objects.equals(jsonParserFieldName, "id")) {
@@ -208,6 +249,9 @@ public class UserAccountSerDes {
 			else if (Objects.equals(jsonParserFieldName, "roles")) {
 				return false;
 			}
+			else if (Objects.equals(jsonParserFieldName, "spaceOwner")) {
+				return false;
+			}
 
 			return false;
 		}
@@ -217,7 +261,15 @@ public class UserAccountSerDes {
 			UserAccount userAccount, String jsonParserFieldName,
 			Object jsonParserFieldValue) {
 
-			if (Objects.equals(jsonParserFieldName, "externalReferenceCode")) {
+			if (Objects.equals(jsonParserFieldName, "assetLibraryCreator")) {
+				if (jsonParserFieldValue != null) {
+					userAccount.setAssetLibraryCreator(
+						(Boolean)jsonParserFieldValue);
+				}
+			}
+			else if (Objects.equals(
+						jsonParserFieldName, "externalReferenceCode")) {
+
 				if (jsonParserFieldValue != null) {
 					userAccount.setExternalReferenceCode(
 						(String)jsonParserFieldValue);
@@ -252,6 +304,11 @@ public class UserAccountSerDes {
 					}
 
 					userAccount.setRoles(rolesArray);
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "spaceOwner")) {
+				if (jsonParserFieldValue != null) {
+					userAccount.setSpaceOwner((Boolean)jsonParserFieldValue);
 				}
 			}
 		}

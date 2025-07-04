@@ -25,6 +25,27 @@ public class UserAccount implements Cloneable, Serializable {
 		return UserAccountSerDes.toDTO(json);
 	}
 
+	public Boolean getAssetLibraryCreator() {
+		return assetLibraryCreator;
+	}
+
+	public void setAssetLibraryCreator(Boolean assetLibraryCreator) {
+		this.assetLibraryCreator = assetLibraryCreator;
+	}
+
+	public void setAssetLibraryCreator(
+		UnsafeSupplier<Boolean, Exception> assetLibraryCreatorUnsafeSupplier) {
+
+		try {
+			assetLibraryCreator = assetLibraryCreatorUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Boolean assetLibraryCreator;
+
 	public String getExternalReferenceCode() {
 		return externalReferenceCode;
 	}
@@ -125,6 +146,27 @@ public class UserAccount implements Cloneable, Serializable {
 	}
 
 	protected Role[] roles;
+
+	public Boolean getSpaceOwner() {
+		return spaceOwner;
+	}
+
+	public void setSpaceOwner(Boolean spaceOwner) {
+		this.spaceOwner = spaceOwner;
+	}
+
+	public void setSpaceOwner(
+		UnsafeSupplier<Boolean, Exception> spaceOwnerUnsafeSupplier) {
+
+		try {
+			spaceOwner = spaceOwnerUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Boolean spaceOwner;
 
 	@Override
 	public UserAccount clone() throws CloneNotSupportedException {
