@@ -25,11 +25,11 @@ public class SpaceAbstractHeaderUtil {
 		return HashMapBuilder.<String, Object>put(
 			"label", LanguageUtil.get(httpServletRequest, labelKey)
 		).put(
+			"modalProps", modalProps
+		).put(
 			"title", LanguageUtil.get(httpServletRequest, titleKey)
 		).put(
 			"url", url
-		).put(
-			"modalProps", modalProps
 		).build();
 	}
 
