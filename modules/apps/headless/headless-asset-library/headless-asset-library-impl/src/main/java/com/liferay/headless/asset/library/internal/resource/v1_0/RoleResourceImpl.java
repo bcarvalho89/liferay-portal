@@ -5,9 +5,17 @@
 
 package com.liferay.headless.asset.library.internal.resource.v1_0;
 
+import com.liferay.headless.asset.library.dto.v1_0.Role;
 import com.liferay.headless.asset.library.resource.v1_0.RoleResource;
+import com.liferay.portal.kernel.exception.NoSuchUserException;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
+import com.liferay.portal.kernel.service.GroupService;
+import com.liferay.portal.kernel.service.RoleService;
+import com.liferay.portal.vulcan.pagination.Page;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ServiceScope;
 
 /**
@@ -18,4 +26,44 @@ import org.osgi.service.component.annotations.ServiceScope;
 	scope = ServiceScope.PROTOTYPE, service = RoleResource.class
 )
 public class RoleResourceImpl extends BaseRoleResourceImpl {
+
+	@Override
+	public Page<Role> getAssetLibraryUserAccountUserRolesPage(
+			Long assetLibraryId, Long userId)
+		throws Exception {
+
+		if (!FeatureFlagManagerUtil.isEnabled("LPD-17564")) {
+			throw new UnsupportedOperationException();
+		}
+
+		if (!_groupService.hasUserGroup(userId, assetLibraryId)) {
+			throw new NoSuchUserException(
+				"No user exists with user group ID " + userId);
+		}
+
+		return Page.of(
+			transform(
+				_roleService.getUserGroupRoles(userId, assetLibraryId),
+				this::_toRole));
+	}
+
+	private Role _toRole(com.liferay.portal.kernel.model.Role role)
+		throws PortalException {
+
+		return new Role() {
+			{
+				setExternalReferenceCode(role::getExternalReferenceCode);
+				setId(role::getRoleId);
+				setName(role::getName);
+				setRoleType(role::getType);
+			}
+		};
+	}
+
+	@Reference
+	private GroupService _groupService;
+
+	@Reference
+	private RoleService _roleService;
+
 }
