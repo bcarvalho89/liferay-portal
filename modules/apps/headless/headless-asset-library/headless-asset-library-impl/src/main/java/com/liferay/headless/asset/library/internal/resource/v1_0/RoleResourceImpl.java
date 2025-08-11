@@ -12,6 +12,9 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.service.GroupService;
 import com.liferay.portal.kernel.service.RoleService;
+import com.liferay.portal.kernel.service.UserGroupRoleService;
+import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.vulcan.pagination.Page;
 
 import org.osgi.service.component.annotations.Component;
@@ -47,6 +50,46 @@ public class RoleResourceImpl extends BaseRoleResourceImpl {
 				this::_toRole));
 	}
 
+	@Override
+	public Page<Role> putAssetLibraryUserAccountUserRolesPage(
+			Long assetLibraryId, Long userId, Role[] roles)
+		throws Exception {
+
+		if (!FeatureFlagManagerUtil.isEnabled("LPD-17564")) {
+			throw new UnsupportedOperationException();
+		}
+
+		if (!_groupService.hasUserGroup(userId, assetLibraryId)) {
+			throw new NoSuchUserException(
+				"No user exists with user group ID " + userId);
+		}
+
+		long[] roleIdsArray = ListUtil.toLongArray(
+			_roleService.getUserGroupRoles(userId, assetLibraryId),
+			com.liferay.portal.kernel.model.Role.ROLE_ID_ACCESSOR);
+
+		_userGroupRoleService.deleteUserGroupRoles(
+			userId, assetLibraryId, roleIdsArray);
+
+		long[] roleIds = new long[0];
+
+		for (Role role : roles) {
+			com.liferay.portal.kernel.model.Role persistedRole =
+				_roleService.getRole(
+					contextCompany.getCompanyId(), role.getName());
+
+			roleIds = ArrayUtil.append(roleIds, persistedRole.getRoleId());
+		}
+
+		_userGroupRoleService.addUserGroupRoles(
+			userId, assetLibraryId, roleIds);
+
+		return Page.of(
+			transform(
+				_roleService.getUserGroupRoles(userId, assetLibraryId),
+				this::_toRole));
+	}
+
 	private Role _toRole(com.liferay.portal.kernel.model.Role role)
 		throws PortalException {
 
@@ -65,5 +108,8 @@ public class RoleResourceImpl extends BaseRoleResourceImpl {
 
 	@Reference
 	private RoleService _roleService;
+
+	@Reference
+	private UserGroupRoleService _userGroupRoleService;
 
 }
