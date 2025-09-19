@@ -80,7 +80,7 @@ public class ViewRecycleBinSectionDisplayContextTest
 					).put(
 						"href", (String)null
 					).put(
-						"label", "Recycle Bin"
+						"label", "recycle-bin"
 					))
 			).put(
 				"hideSpace", true
