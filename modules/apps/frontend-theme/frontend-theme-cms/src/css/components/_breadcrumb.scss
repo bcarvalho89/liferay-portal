@@ -1,4 +1,10 @@
 .cms-breadcrumb .breadcrumb-item {
+	margin-right: 8px;
+
+	+ .breadcrumb-item {
+		padding-left: 16px;
+	}
+
 	.breadcrumb-link:not([href]) {
 		text-decoration: none;
 	}
