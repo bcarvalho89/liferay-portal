@@ -228,16 +228,25 @@ const Row = ({
 								textValue={Liferay.Language.get('select-item')}
 							>
 								{!item.editable && (
-									<SelectionComponent
-										checked={active}
-										onChange={() =>
-											onItemSelectionChange(item)
-										}
-										title={Liferay.Language.get(
-											'select-item'
-										)}
-										value={id}
-									/>
+									<>
+										<SelectionComponent
+											aria-labelledby={`item-${id}`}
+											checked={active}
+											onChange={() =>
+												onItemSelectionChange(item)
+											}
+											title={Liferay.Language.get(
+												'select-item'
+											)}
+											value={id}
+										/>
+										<span
+											className="sr-only"
+											id={`item-${id}`}
+										>
+											{`${Liferay.Language.get('select')} ${item.title}`}
+										</span>
+									</>
 								)}
 							</ClayTableCell>
 						);
