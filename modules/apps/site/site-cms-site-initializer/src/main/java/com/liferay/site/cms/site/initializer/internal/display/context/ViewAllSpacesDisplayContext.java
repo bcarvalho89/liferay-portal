@@ -129,10 +129,7 @@ public class ViewAllSpacesDisplayContext {
 	public CreationMenu getCreationMenu() {
 		return CreationMenuBuilder.addPrimaryDropdownItem(
 			dropdownItem -> {
-				dropdownItem.setHref(
-					StringBundler.concat(
-						_themeDisplay.getPathFriendlyURLPublic(),
-						GroupConstants.CMS_FRIENDLY_URL, "/new-space"));
+				dropdownItem.setHref(_getNewSpaceCreationURL());
 				dropdownItem.setIcon("forms");
 				dropdownItem.setLabel(
 					_language.get(_httpServletRequest, "add-space"));
@@ -249,6 +246,13 @@ public class ViewAllSpacesDisplayContext {
 		}
 
 		return layout.getName(_themeDisplay.getLocale(), true);
+	}
+
+	private String _getNewSpaceCreationURL() {
+		return StringBundler.concat(
+			_themeDisplay.getPathFriendlyURLPublic(),
+			GroupConstants.CMS_FRIENDLY_URL, "/new-space?backURL=",
+			_themeDisplay.getURLCurrent());
 	}
 
 	private Map<String, Object> _getSpacePermissionAdditionalProps() {
