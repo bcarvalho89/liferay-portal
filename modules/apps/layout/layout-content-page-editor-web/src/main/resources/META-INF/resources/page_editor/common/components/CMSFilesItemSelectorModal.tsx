@@ -23,16 +23,31 @@ const BASE_SEARCH_PARAMS = {
 	nestedFields: 'description,embedded,file.thumbnailURL',
 };
 
-const CMS_ROOT_FILES_URL = `${ROOT_URL}?${new URLSearchParams({
-	...BASE_SEARCH_PARAMS,
-	filter: "cmsRoot eq true and cmsSection eq 'files' and status in (0, 2, 3)",
-}).toString()}`;
+function getFilterString(allowedFileExtensions?: string[], folderId?: string) {
+	let filter = folderId
+		? `folderId eq ${folderId}`
+		: "cmsRoot eq true and cmsSection eq 'files' and status in (0, 2, 3)";
 
-function getCMSChildFolderURL(folderId: string) {
-	return `${ROOT_URL}?${new URLSearchParams({
+	if (allowedFileExtensions && allowedFileExtensions.length > 0) {
+		const extensionList = allowedFileExtensions
+			.map((ext) => `'${ext.trim()}'`)
+			.join(', ');
+
+		filter += ` and extension in (${extensionList})`;
+	}
+
+	return filter;
+}
+
+function getCMSURL(allowedFileExtensions?: string[], folderId?: string) {
+	const contentFilter = getFilterString(allowedFileExtensions, folderId);
+
+	const allParams = {
 		...BASE_SEARCH_PARAMS,
-		filter: `folderId eq ${folderId}`,
-	}).toString()}`;
+		filter: contentFilter,
+	};
+
+	return `${ROOT_URL}?${new URLSearchParams(allParams).toString()}`;
 }
 
 type CMSFile = {
@@ -40,19 +55,23 @@ type CMSFile = {
 	title: string;
 };
 
-function CMSFilesItemSelectorModal({
-	fdsProps,
-	...otherProps
-}: Omit<
+type CMSFilesItemSelectorModalProps = Omit<
 	IItemSelectorModalProps<CMSFile>,
 	'itemTypeLabel' | 'fdsProps' | 'apiURL'
 > & {
+	allowedFileExtensions?: string[];
 	fdsProps?: IItemSelectorModalProps<CMSFile>['fdsProps'];
-}) {
+};
+
+function CMSFilesItemSelectorModal({
+	allowedFileExtensions,
+	fdsProps,
+	...otherProps
+}: CMSFilesItemSelectorModalProps) {
 	const [folderStructure, setFolderStructure] = useState<
 		{folderId: string; folderName: string}[]
 	>([]);
-	const [url, setURL] = useState(CMS_ROOT_FILES_URL);
+	const [url, setURL] = useState(() => getCMSURL(allowedFileExtensions));
 
 	function onChildFolderClick({
 		folderId,
@@ -66,7 +85,7 @@ function CMSFilesItemSelectorModal({
 			{folderId, folderName},
 		]);
 
-		setURL(getCMSChildFolderURL(folderId));
+		setURL(getCMSURL(allowedFileExtensions, folderId));
 	}
 
 	return (
@@ -79,7 +98,7 @@ function CMSFilesItemSelectorModal({
 							{
 								label: Liferay.Language.get('default'),
 								onClick: () => {
-									setURL(CMS_ROOT_FILES_URL);
+									setURL(getCMSURL(allowedFileExtensions));
 									setFolderStructure([]);
 								},
 							},
@@ -94,8 +113,12 @@ function CMSFilesItemSelectorModal({
 													index + 1
 												)
 										);
-
-										setURL(getCMSChildFolderURL(folderId));
+										setURL(
+											getCMSURL(
+												allowedFileExtensions,
+												folderId
+											)
+										);
 									},
 								})
 							),
