@@ -5,15 +5,18 @@
 
 import {ClayButtonWithIcon} from '@clayui/button';
 import ClayForm, {ClayInput} from '@clayui/form';
+import {useModal} from '@clayui/modal';
 import {useId} from 'frontend-js-components-web';
 import {sub} from 'frontend-js-web';
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, {useState} from 'react';
 
 import {VIEWPORT_SIZES} from '../../app/config/constants/viewportSizes';
 import {useSelector} from '../../app/contexts/StoreContext';
 import usePageContents from '../../app/utils/usePageContents';
-import {openImageSelector} from '../openImageSelector';
+import CMSFilesItemSelectorModal from './CMSFilesItemSelectorModal';
+
+const IMAGE_EXTENSIONS = ['bmp', 'gif', 'jpeg', 'jpg', 'png', 'svg', 'tiff'];
 
 export function ImageSelector({
 	fileEntryId,
@@ -23,6 +26,7 @@ export function ImageSelector({
 	onImageSelected,
 }) {
 	const imageTitleId = useId();
+	const [cmsFiles, setCMSFiles] = useState([]);
 
 	const selectedViewportSize = useSelector(
 		(state) => state.selectedViewportSize
@@ -42,6 +46,12 @@ export function ImageSelector({
 			: Liferay.Language.get('select-x'),
 		Liferay.Language.get('image')
 	);
+
+	const {
+		observer: cmsFilesItemSelectorObserver,
+		onOpenChange: cmsFilesItemSelectorOpenChange,
+		open: cmsFilesItemSelectorOpen,
+	} = useModal();
 
 	return selectedViewportSize === VIEWPORT_SIZES.desktop ? (
 		<>
@@ -67,11 +77,9 @@ export function ImageSelector({
 						<ClayButtonWithIcon
 							aria-label={selectButtonLabel}
 							displayType="secondary"
-							onClick={() =>
-								openImageSelector((image) => {
-									onImageSelected(image);
-								})
-							}
+							onClick={() => {
+								cmsFilesItemSelectorOpenChange(true);
+							}}
 							size="sm"
 							symbol={hasImageTitle ? 'change' : 'plus'}
 							title={selectButtonLabel}
@@ -97,6 +105,28 @@ export function ImageSelector({
 						</>
 					)}
 				</ClayInput.Group>
+
+				<CMSFilesItemSelectorModal
+					allowedFileExtensions={IMAGE_EXTENSIONS}
+					items={cmsFiles}
+					observer={cmsFilesItemSelectorObserver}
+					onItemsChange={(items) => {
+						setCMSFiles(items);
+						const item = {
+							classNameId: items[0].embedded.id,
+							classPK: String(items[0].embedded.file.id),
+							fileEntryId: String(items[0].embedded.file.id),
+							title: String(items[0].embedded.title),
+							url: String(items[0].embedded.file.link),
+						};
+
+						console.log(items[0]);
+
+						onImageSelected(item);
+					}}
+					onOpenChange={cmsFilesItemSelectorOpenChange}
+					open={cmsFilesItemSelectorOpen}
+				/>
 			</ClayForm.Group>
 		</>
 	) : (

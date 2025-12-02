@@ -29,6 +29,8 @@
 		"@liferay/cookies-banner-web": "*",
 		"@liferay/frontend-icons-web": "*",
 		"@liferay/frontend-js-codemirror-web": "*",
+		"@liferay/frontend-js-item-selector-web": "*",
+		"@liferay/frontend-data-set-web": "*",
 		"@liferay/frontend-js-react-web": "*",
 		"@liferay/frontend-js-state-web": "*",
 		"@liferay/layout-js-components-web": "*",
