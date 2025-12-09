@@ -2,8 +2,8 @@
  * SPDX-FileCopyrightText: (c) 2025 Liferay, Inc. https://liferay.com
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
-
 import ClayButton from '@clayui/button';
+import ClayForm, {ClaySelectWithOption} from '@clayui/form';
 import {IView} from '@liferay/frontend-data-set-web';
 import {
 	IItemSelectorModalProps,
@@ -12,6 +12,13 @@ import {
 import React, {useEffect, useState} from 'react';
 import {v4 as uuidv4} from 'uuid';
 import {openToast} from 'frontend-js-components-web';
+
+const CMS_SECTION = {
+	CONTENTS: 'contents',
+	FILES: 'files',
+} as const;
+
+type CMSSection = (typeof CMS_SECTION)[keyof typeof CMS_SECTION];
 
 const OBJECT_ENTRY_FOLDER_CLASS_NAME =
 	'com.liferay.object.model.ObjectEntryFolder';
@@ -24,7 +31,7 @@ const BASE_SEARCH_PARAMS = {
 		'description,embedded,file.metadata,file.previewURL,file.thumbnailURL,numberOfObjectEntries,numberOfObjectEntryFolders,systemProperties.objectDefinitionBrief',
 };
 
-function getFilterString(cmsSection?: 'contents' | 'files', folderId?: string) {
+function getFilterString(cmsSection?: CMSSection, folderId?: string) {
 	if (folderId) {
 		return `folderId eq ${folderId}`;
 	}
@@ -35,33 +42,41 @@ function getFilterString(cmsSection?: 'contents' | 'files', folderId?: string) {
 		return `cmsRoot eq true and ${sectionFilter} and status in (0, 2, 3, 1, 7)`;
 	}
 
-	const sectionFilter = "cmsSection in ('contents', 'files')";
-
-	return `cmsRoot eq true and ${sectionFilter} and status in (0, 2, 3, 1, 7)`;
+	return `cmsRoot eq true and cmsSection in ('contents', 'files') and status in (0, 2, 3, 1, 7)`;
 }
 
-function getCMSURL(cmsSection?: 'contents' | 'files', folderId?: string) {
+function getCMSURL(cmsSection?: CMSSection, folderId?: string) {
 	const contentFilter = getFilterString(cmsSection, folderId);
 
 	const allParams = {
 		...BASE_SEARCH_PARAMS,
-		currentURL: `/web/cms/${cmsSection || 'contents'}`,
+		currentURL: `/web/cms/${cmsSection || 'files'}`,
 		filter: contentFilter,
 	};
 
 	return `${ROOT_URL}?${new URLSearchParams(allParams).toString()}`;
 }
 
-type Item = {
-	id: string;
-	title: string;
+type CMSItem = {
+	entryClassName: string;
+	embedded: {
+		id: string;
+		title: string;
+		description: string;
+		file?: {
+			id: string;
+			link: string;
+			thumbnailURL: string;
+			mimeType: string;
+			name: string;
+		};
+	};
 };
 
 type NewItemSelectorModalProps = Omit<
-	IItemSelectorModalProps<Item>,
+	IItemSelectorModalProps<CMSItem>,
 	'itemTypeLabel' | 'apiURL'
 > & {
-	cmsSection?: 'contents' | 'files';
 	onUploadFile?: (file: File) => Promise<any>;
 };
 
@@ -74,24 +89,22 @@ const FDS_DEFAULT_PROPS = {
 };
 
 function NewItemSelectorModal({
-	cmsSection,
 	fdsProps,
 	onUploadFile,
 	...otherProps
 }: NewItemSelectorModalProps) {
+	const [cmsSection, setCMSSection] = useState<CMSSection>(CMS_SECTION.FILES);
 	const [folderStructure, setFolderStructure] = useState<
 		{folderId: string; folderName: string}[]
 	>([]);
 
-	const [url, setURL] = useState(() => getCMSURL(cmsSection));
+	const url = getCMSURL(cmsSection, folderStructure.at(-1)?.folderId);
 
 	useEffect(() => {
-		setURL(getCMSURL(cmsSection));
-
 		if (!otherProps.open) {
 			setFolderStructure([]);
 		}
-	}, [cmsSection, otherProps.open]);
+	}, [otherProps.open]);
 
 	function onChildFolderClick({
 		folderId,
@@ -104,26 +117,52 @@ function NewItemSelectorModal({
 			...prevStructure,
 			{folderId, folderName},
 		]);
-
-		setURL(getCMSURL(cmsSection, folderId));
 	}
 
 	const itemTypeLabel =
-		cmsSection === 'files'
+		cmsSection === CMS_SECTION.FILES
 			? Liferay.Language.get('files')
-			: cmsSection === 'contents'
+			: cmsSection === CMS_SECTION.CONTENTS
 				? Liferay.Language.get('documents')
 				: Liferay.Language.get('files-and-documents');
 
 	return (
-		<ItemSelectorModal<Item>
+		<ItemSelectorModal<CMSItem>
 			{...otherProps}
+			key={cmsSection}
 			apiURL={url}
+			message={
+				<div className="container-fluid">
+					<ClayForm.Group>
+						<label htmlFor="source-selector">
+							{Liferay.Language.get('source')}
+						</label>
+
+						<ClaySelectWithOption
+							id="source-selector"
+							onChange={(event) => {
+								setFolderStructure([]);
+								setCMSSection(event.target.value as CMSSection);
+							}}
+							options={[
+								{
+									label: Liferay.Language.get('files'),
+									value: CMS_SECTION.FILES,
+								},
+								{
+									label: Liferay.Language.get('contents'),
+									value: CMS_SECTION.CONTENTS,
+								},
+							]}
+							value={cmsSection}
+						/>
+					</ClayForm.Group>
+				</div>
+			}
 			breadcrumbs={[
 				{
 					label: Liferay.Language.get('sites-and-libraries'),
 					onClick: () => {
-						setURL(getCMSURL(cmsSection));
 						setFolderStructure([]);
 					},
 				},
@@ -133,7 +172,6 @@ function NewItemSelectorModal({
 						setFolderStructure((prevFolderStructure) =>
 							prevFolderStructure.slice(0, index + 1)
 						);
-						setURL(getCMSURL(cmsSection, folderId));
 					},
 				})),
 			]}
@@ -142,7 +180,7 @@ function NewItemSelectorModal({
 				...FDS_DEFAULT_PROPS,
 				...fdsProps,
 				fileDropSettings:
-					onUploadFile && cmsSection === 'files'
+					onUploadFile && cmsSection === CMS_SECTION.FILES
 						? {
 								enabled: true,
 								onFileDrop: (files: File[]) => {
@@ -242,6 +280,29 @@ function NewItemSelectorModal({
 							return props;
 						},
 						thumbnail: 'cards2',
+					},
+					{
+						contentRenderer: 'table',
+						label: Liferay.Language.get('table'),
+						name: 'table',
+						schema: {
+							fields: [
+								{
+									contentRenderer: 'cmsTitleCellRenderer',
+									fieldName: 'embedded.title',
+									label: Liferay.Language.get('title'),
+								},
+								{
+									fieldName: 'embedded.description',
+									label: Liferay.Language.get('description'),
+								},
+								{
+									fieldName: 'embedded.file.name',
+									label: Liferay.Language.get('file-name'),
+								},
+							],
+						},
+						thumbnail: 'table',
 					},
 				] as IView[],
 			}}

@@ -4,7 +4,7 @@
  */
 
 import {ClayButtonWithIcon} from '@clayui/button';
-import ClayForm, {ClayInput, ClaySelectWithOption} from '@clayui/form';
+import ClayForm, {ClayInput} from '@clayui/form';
 import {useModal} from '@clayui/modal';
 import {useId} from 'frontend-js-components-web';
 import {sub} from 'frontend-js-web';
@@ -25,9 +25,6 @@ export function ImageSelector({
 }) {
 	const imageTitleId = useId();
 	const [items, setItems] = useState([]);
-	const [source, setSource] = useState('files');
-	const sourceSelectId = useId();
-
 	const selectedViewportSize = useSelector(
 		(state) => state.selectedViewportSize
 	);
@@ -115,31 +112,7 @@ export function ImageSelector({
 					)}
 				</ClayInput.Group>
 
-				<ClayForm.Group>
-					<label htmlFor={sourceSelectId}>
-						{Liferay.Language.get('source')}
-					</label>
-
-					<ClaySelectWithOption
-						id={sourceSelectId}
-						onChange={(event) => setSource(event.target.value)}
-						options={[
-							{
-								label: Liferay.Language.get('files'),
-								value: 'files',
-							},
-							{
-								label: Liferay.Language.get('content'),
-								value: 'contents',
-							},
-						]}
-						sizing="sm"
-						value={source}
-					/>
-				</ClayForm.Group>
-
 				<NewItemSelectorModal
-					cmsSection={source}
 					items={items}
 					observer={observer}
 					onItemsChange={(items) => {
