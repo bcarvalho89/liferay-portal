@@ -55,6 +55,13 @@ export function ImageSelector({
 		}
 	}, [open]);
 
+	const onUploadFile = async (file) => {
+
+		// logic to upload a file
+
+		console.log(file);
+	};
+
 	return selectedViewportSize === VIEWPORT_SIZES.desktop ? (
 		<>
 			<ClayForm.Group>
@@ -150,6 +157,7 @@ export function ImageSelector({
 						setItems([]);
 					}}
 					onOpenChange={onOpenChange}
+					onUploadFile={onUploadFile}
 					open={open}
 				/>
 			</ClayForm.Group>

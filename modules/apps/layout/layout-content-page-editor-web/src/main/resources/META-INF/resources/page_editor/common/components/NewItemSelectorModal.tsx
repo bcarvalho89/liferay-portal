@@ -11,6 +11,7 @@ import {
 } from '@liferay/frontend-js-item-selector-web';
 import React, {useEffect, useState} from 'react';
 import {v4 as uuidv4} from 'uuid';
+import {openToast} from 'frontend-js-components-web';
 
 const OBJECT_ENTRY_FOLDER_CLASS_NAME =
 	'com.liferay.object.model.ObjectEntryFolder';
@@ -61,6 +62,7 @@ type NewItemSelectorModalProps = Omit<
 	'itemTypeLabel' | 'apiURL'
 > & {
 	cmsSection?: 'contents' | 'files';
+	onUploadFile?: (file: File) => Promise<any>;
 };
 
 const FDS_DEFAULT_PROPS = {
@@ -74,6 +76,7 @@ const FDS_DEFAULT_PROPS = {
 function NewItemSelectorModal({
 	cmsSection,
 	fdsProps,
+	onUploadFile,
 	...otherProps
 }: NewItemSelectorModalProps) {
 	const [folderStructure, setFolderStructure] = useState<
@@ -138,6 +141,34 @@ function NewItemSelectorModal({
 			fdsProps={{
 				...FDS_DEFAULT_PROPS,
 				...fdsProps,
+				fileDropSettings:
+					onUploadFile && cmsSection === 'files'
+						? {
+								enabled: true,
+								onFileDrop: (files: File[]) => {
+									files.forEach(async (file) => {
+										try {
+											await onUploadFile(file);
+
+											openToast({
+												message: Liferay.Language.get(
+													'file-uploaded-successfully'
+												),
+												type: 'success',
+											});
+										}
+										catch (error) {
+											openToast({
+												message: Liferay.Language.get(
+													'an-unexpected-error-occurred'
+												),
+												type: 'danger',
+											});
+										}
+									});
+								},
+							}
+						: undefined,
 				customRenderers: {
 					tableCell: [
 						{
