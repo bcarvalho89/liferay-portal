@@ -63,6 +63,7 @@ type CMSItem = {
 		id: string;
 		title: string;
 		description: string;
+		scopeKey?: string;
 		file?: {
 			id: string;
 			link: string;
@@ -256,6 +257,7 @@ function NewItemSelectorModal({
 						name: 'cards',
 						schema: {
 							description: 'embedded.description',
+							labels: [{value: 'embedded.scopeKey'}],
 							image: 'embedded.file.thumbnailURL',
 							title: 'embedded.title',
 						},
@@ -277,10 +279,16 @@ function NewItemSelectorModal({
 								};
 							}
 
-							return props;
+							const spaceLabel = {
+								displayType: 'secondary',
+								value: item.embedded.scopeKey || '',
+							};
+
+							return {...props, labels: [spaceLabel]};
 						},
 						thumbnail: 'cards2',
 					},
+
 					{
 						contentRenderer: 'table',
 						label: Liferay.Language.get('table'),
@@ -288,7 +296,6 @@ function NewItemSelectorModal({
 						schema: {
 							fields: [
 								{
-									contentRenderer: 'cmsTitleCellRenderer',
 									fieldName: 'embedded.title',
 									label: Liferay.Language.get('title'),
 								},
@@ -299,6 +306,10 @@ function NewItemSelectorModal({
 								{
 									fieldName: 'embedded.file.name',
 									label: Liferay.Language.get('file-name'),
+								},
+								{
+									fieldName: 'embedded.scopeKey',
+									label: Liferay.Language.get('space'),
 								},
 							],
 						},
