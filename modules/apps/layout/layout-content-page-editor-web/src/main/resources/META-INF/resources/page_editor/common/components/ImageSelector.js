@@ -6,7 +6,7 @@
 import {ClayButtonWithIcon} from '@clayui/button';
 import ClayForm, {ClayInput} from '@clayui/form';
 import {useModal} from '@clayui/modal';
-import {useId} from 'frontend-js-components-web';
+import {ItemSelectorModal, useId} from 'frontend-js-components-web';
 import {sub} from 'frontend-js-web';
 import PropTypes from 'prop-types';
 import React, {useState} from 'react';
@@ -14,9 +14,35 @@ import React, {useState} from 'react';
 import {VIEWPORT_SIZES} from '../../app/config/constants/viewportSizes';
 import {useSelector} from '../../app/contexts/StoreContext';
 import usePageContents from '../../app/utils/usePageContents';
+import CMSContentItemSelectorModal from './CMSContentItemSelectorModal';
 import CMSFilesItemSelectorModal from './CMSFilesItemSelectorModal';
 
 const IMAGE_EXTENSIONS = ['bmp', 'gif', 'jpeg', 'jpg', 'png', 'svg', 'tiff'];
+
+const FDS_DEFAULT_PROPS = {
+	pagination: {
+		deltas: [{label: 20}, {label: 40}, {label: 60}],
+		initialDelta: 20,
+	},
+	selectionType: 'single',
+};
+
+const documentsItemSelectorConfig = {
+	apiURL: `${location.origin}/o/headless-delivery/v1.0/sites/${Liferay.ThemeDisplay.getSiteGroupId()}/documents`,
+	itemTypeLabel: Liferay.Language.get('documents'),
+	locator: {
+		id: 'id',
+		label: 'fileName',
+		value: 'id',
+	},
+
+	// views: documentViews,
+
+};
+
+function getRandomId() {
+	return Math.random().toString(36).substring(2, 9);
+}
 
 export function ImageSelector({
 	fileEntryId,
@@ -27,6 +53,8 @@ export function ImageSelector({
 }) {
 	const imageTitleId = useId();
 	const [cmsFiles, setCMSFiles] = useState([]);
+	const [documentsItemSelectorModal, setDocumentsItemSelectorModal] =
+		useState([]);
 
 	const selectedViewportSize = useSelector(
 		(state) => state.selectedViewportSize
@@ -51,6 +79,12 @@ export function ImageSelector({
 		observer: cmsFilesItemSelectorObserver,
 		onOpenChange: cmsFilesItemSelectorOpenChange,
 		open: cmsFilesItemSelectorOpen,
+	} = useModal();
+
+	const {
+		observer: documentItemSelectorObserver,
+		onOpenChange: documentItemSelectorOpenChange,
+		open: documentItemSelectorOpen,
 	} = useModal();
 
 	return selectedViewportSize === VIEWPORT_SIZES.desktop ? (
@@ -106,8 +140,36 @@ export function ImageSelector({
 					)}
 				</ClayInput.Group>
 
+				<ClayInput.Group small>
+					<ClayInput.GroupItem>
+						<ClayInput
+							className="page-editor__item-selector__content-input"
+							id={imageTitleId}
+							placeholder={sub(
+								Liferay.Language.get('no-x-selected'),
+								Liferay.Language.get('content')
+							)}
+							readOnly
+							sizing="sm"
+						/>
+					</ClayInput.GroupItem>
+
+					<ClayInput.GroupItem shrink>
+						<ClayButtonWithIcon
+							aria-label={selectButtonLabel}
+							displayType="secondary"
+							onClick={() => {
+								documentItemSelectorOpenChange(true);
+							}}
+							size="sm"
+							symbol="plus"
+							title={selectButtonLabel}
+						/>
+					</ClayInput.GroupItem>
+				</ClayInput.Group>
+
 				<CMSFilesItemSelectorModal
-					allowedFileExtensions={IMAGE_EXTENSIONS}
+					allowedFileExtensions={[]}
 					items={cmsFiles}
 					observer={cmsFilesItemSelectorObserver}
 					onItemsChange={(items) => {
@@ -126,6 +188,18 @@ export function ImageSelector({
 					}}
 					onOpenChange={cmsFilesItemSelectorOpenChange}
 					open={cmsFilesItemSelectorOpen}
+				/>
+
+				<CMSContentItemSelectorModal
+					items={documentsItemSelectorModal}
+					observer={documentItemSelectorObserver}
+					onItemsChange={(items) => {
+						setDocumentsItemSelectorModal(items);
+
+						console.log(items[0]);
+					}}
+					onOpenChange={documentItemSelectorOpenChange}
+					open={documentItemSelectorOpen}
 				/>
 			</ClayForm.Group>
 		</>
