@@ -82,7 +82,11 @@ type NewItemSelectorModalProps = Omit<
 	IItemSelectorModalProps<CMSItem>,
 	'itemTypeLabel' | 'apiURL'
 > & {
-	onUploadFile?: (file: File, dropTarget?: any) => Promise<any>;
+	onUploadFile?: (
+		file: File,
+		groupId: string,
+		folderId: string
+	) => Promise<any>;
 };
 
 const FDS_DEFAULT_PROPS = {
@@ -207,11 +211,19 @@ function NewItemSelectorModal({
 									files: File[],
 									dropTarget?: any
 								) => {
+									const targetGroupId = String(
+										dropTarget?.embedded?.scopeId ||
+											Liferay.ThemeDisplay.getScopeGroupId()
+									);
+									const targetFolderId =
+										dropTarget?.embedded?.id || '0';
+
 									files.forEach(async (file) => {
 										try {
 											await onUploadFile(
 												file,
-												dropTarget
+												targetGroupId,
+												targetFolderId
 											);
 
 											openToast({
@@ -222,6 +234,7 @@ function NewItemSelectorModal({
 											});
 										}
 										catch (error) {
+											console.error(error);
 											openToast({
 												message: Liferay.Language.get(
 													'an-unexpected-error-occurred'

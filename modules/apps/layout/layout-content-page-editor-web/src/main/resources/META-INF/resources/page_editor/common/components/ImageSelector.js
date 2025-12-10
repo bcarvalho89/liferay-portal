@@ -7,7 +7,7 @@ import {ClayButtonWithIcon} from '@clayui/button';
 import ClayForm, {ClayInput} from '@clayui/form';
 import {useModal} from '@clayui/modal';
 import {useId} from 'frontend-js-components-web';
-import {sub} from 'frontend-js-web';
+import {fetch, sub} from 'frontend-js-web';
 import PropTypes from 'prop-types';
 import React, {useEffect, useState} from 'react';
 
@@ -52,10 +52,29 @@ export function ImageSelector({
 		}
 	}, [open]);
 
-	const onUploadFile = async (file, dropTarget) => {
-		console.log(file);
-		console.log(dropTarget);
-	};
+	const onUploadFile = React.useCallback(async (file, groupId, folderId) => {
+		const formData = new FormData();
+
+		formData.append('file', file);
+		formData.append('title', file.name);
+		formData.append('description', '');
+		formData.append('folderId', folderId);
+
+		const response = await fetch(
+			`/o/headless-delivery/v1.0/sites/${groupId}/documents`,
+			{
+				body: formData,
+				method: 'POST',
+			}
+		);
+
+		if (!response.ok) {
+			const errorData = await response.json();
+			throw new Error(
+				errorData.title || Liferay.Language.get('upload-failed')
+			);
+		}
+	}, []);
 
 	return selectedViewportSize === VIEWPORT_SIZES.desktop ? (
 		<>
