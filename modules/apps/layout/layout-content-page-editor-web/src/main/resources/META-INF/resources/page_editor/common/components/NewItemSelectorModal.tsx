@@ -13,12 +13,13 @@ import React, {useEffect, useState} from 'react';
 import {v4 as uuidv4} from 'uuid';
 import {openToast} from 'frontend-js-components-web';
 
-const CMS_SECTION = {
-	CONTENTS: 'contents',
-	FILES: 'files',
+const CONTENT_SOURCE = {
+	CMS_CONTENTS: 'contents',
+	CMS_FILES: 'files',
+	DXP: 'dpx',
 } as const;
 
-type CMSSection = (typeof CMS_SECTION)[keyof typeof CMS_SECTION];
+type ContentSource = (typeof CONTENT_SOURCE)[keyof typeof CONTENT_SOURCE];
 
 const OBJECT_ENTRY_FOLDER_CLASS_NAME =
 	'com.liferay.object.model.ObjectEntryFolder';
@@ -28,29 +29,31 @@ const ROOT_URL = `${window.location.origin}${Liferay.ThemeDisplay.getPathContext
 const BASE_SEARCH_PARAMS = {
 	emptySearch: 'true',
 	nestedFields:
-		'description,embedded,file.metadata,file.previewURL,file.thumbnailURL,numberOfObjectEntries,numberOfObjectEntryFolders,systemProperties.objectDefinitionBrief',
+		'description,embedded,embedded.contentUrl,file.metadata,file.previewURL,file.thumbnailURL,numberOfObjectEntries,numberOfObjectEntryFolders,systemProperties.objectDefinitionBrief',
 };
 
-function getFilterString(cmsSection?: CMSSection, folderId?: string) {
+function getFilterString(source?: ContentSource, folderId?: string) {
 	if (folderId) {
 		return `folderId eq ${folderId}`;
 	}
 
-	if (cmsSection) {
-		const sectionFilter = `cmsSection eq '${cmsSection}'`;
+	if (
+		source === CONTENT_SOURCE.CMS_CONTENTS ||
+		source === CONTENT_SOURCE.CMS_FILES
+	) {
+		const sectionFilter = `cmsSection eq '${source}'`;
 
 		return `cmsRoot eq true and ${sectionFilter} and status in (0, 2, 3, 1, 7)`;
 	}
 
-	return `cmsRoot eq true and cmsSection in ('contents', 'files') and status in (0, 2, 3, 1, 7)`;
+	return `status in (0, 2, 3, 1, 7)`;
 }
 
-function getCMSURL(cmsSection?: CMSSection, folderId?: string) {
-	const contentFilter = getFilterString(cmsSection, folderId);
+function getCMSURL(source?: ContentSource, folderId?: string) {
+	const contentFilter = getFilterString(source, folderId);
 
 	const allParams = {
 		...BASE_SEARCH_PARAMS,
-		currentURL: `/web/cms/${cmsSection || 'files'}`,
 		filter: contentFilter,
 	};
 
@@ -64,6 +67,7 @@ type CMSItem = {
 		title: string;
 		description: string;
 		scopeKey?: string;
+		contentUrl?: string;
 		file?: {
 			id: string;
 			link: string;
@@ -78,7 +82,7 @@ type NewItemSelectorModalProps = Omit<
 	IItemSelectorModalProps<CMSItem>,
 	'itemTypeLabel' | 'apiURL'
 > & {
-	onUploadFile?: (file: File) => Promise<any>;
+	onUploadFile?: (file: File, dropTarget?: any) => Promise<any>;
 };
 
 const FDS_DEFAULT_PROPS = {
@@ -94,12 +98,14 @@ function NewItemSelectorModal({
 	onUploadFile,
 	...otherProps
 }: NewItemSelectorModalProps) {
-	const [cmsSection, setCMSSection] = useState<CMSSection>(CMS_SECTION.FILES);
+	const [selectorSource, setSelectorSource] = useState<ContentSource>(
+		CONTENT_SOURCE.DXP
+	);
 	const [folderStructure, setFolderStructure] = useState<
 		{folderId: string; folderName: string}[]
 	>([]);
 
-	const url = getCMSURL(cmsSection, folderStructure.at(-1)?.folderId);
+	const url = getCMSURL(selectorSource, folderStructure.at(-1)?.folderId);
 
 	useEffect(() => {
 		if (!otherProps.open) {
@@ -121,16 +127,16 @@ function NewItemSelectorModal({
 	}
 
 	const itemTypeLabel =
-		cmsSection === CMS_SECTION.FILES
+		selectorSource === CONTENT_SOURCE.CMS_FILES
 			? Liferay.Language.get('files')
-			: cmsSection === CMS_SECTION.CONTENTS
+			: selectorSource === CONTENT_SOURCE.CMS_CONTENTS
 				? Liferay.Language.get('documents')
-				: Liferay.Language.get('files-and-documents');
+				: 'All DXP Documents';
 
 	return (
 		<ItemSelectorModal<CMSItem>
 			{...otherProps}
-			key={cmsSection}
+			key={selectorSource}
 			apiURL={url}
 			message={
 				<div className="container-fluid">
@@ -143,19 +149,27 @@ function NewItemSelectorModal({
 							id="source-selector"
 							onChange={(event) => {
 								setFolderStructure([]);
-								setCMSSection(event.target.value as CMSSection);
+								setSelectorSource(
+									event.target.value as ContentSource
+								);
 							}}
 							options={[
 								{
 									label: Liferay.Language.get('files'),
-									value: CMS_SECTION.FILES,
+									value: CONTENT_SOURCE.CMS_FILES,
 								},
 								{
 									label: Liferay.Language.get('contents'),
-									value: CMS_SECTION.CONTENTS,
+									value: CONTENT_SOURCE.CMS_CONTENTS,
+								},
+								{
+									label: Liferay.Language.get(
+										'All DXP Documents'
+									),
+									value: CONTENT_SOURCE.DXP,
 								},
 							]}
-							value={cmsSection}
+							value={selectorSource}
 						/>
 					</ClayForm.Group>
 				</div>
@@ -176,18 +190,29 @@ function NewItemSelectorModal({
 					},
 				})),
 			]}
-			createItemURL={Liferay.ThemeDisplay.getPortalURL()}
 			fdsProps={{
 				...FDS_DEFAULT_PROPS,
 				...fdsProps,
 				fileDropSettings:
-					onUploadFile && cmsSection === CMS_SECTION.FILES
+					onUploadFile &&
+					selectorSource !== CONTENT_SOURCE.CMS_CONTENTS
 						? {
 								enabled: true,
-								onFileDrop: (files: File[]) => {
+								isDropTarget: ({item}: {item: any}) => {
+									return item.entryClassName.includes(
+										OBJECT_ENTRY_FOLDER_CLASS_NAME
+									);
+								},
+								onFileDrop: (
+									files: File[],
+									dropTarget?: any
+								) => {
 									files.forEach(async (file) => {
 										try {
-											await onUploadFile(file);
+											await onUploadFile(
+												file,
+												dropTarget
+											);
 
 											openToast({
 												message: Liferay.Language.get(
@@ -249,7 +274,7 @@ function NewItemSelectorModal({
 						type: 'selection',
 					},
 				],
-				id: `itemSelectorModal-cms-${uuidv4()}`,
+				id: `itemSelectorModal-${uuidv4()}`,
 				views: [
 					{
 						contentRenderer: 'cards',
@@ -279,16 +304,50 @@ function NewItemSelectorModal({
 								};
 							}
 
-							const spaceLabel = {
-								displayType: 'secondary',
-								value: item.embedded.scopeKey || '',
-							};
+							const updatedProps = {...props};
+							const updatedLabels = [];
 
-							return {...props, labels: [spaceLabel]};
+							if (item.embedded?.scopeKey) {
+								updatedLabels.push({
+									displayType: 'secondary',
+									value: item.embedded.scopeKey,
+								});
+							}
+							else {
+								updatedLabels.push({
+									displayType: 'secondary',
+									value: 'Under DXP Documents',
+								});
+							}
+							updatedProps.labels = updatedLabels;
+
+							if (item.embedded?.contentUrl) {
+								const url =
+									item.embedded.contentUrl.split(
+										'&download=true'
+									);
+								updatedProps.image = url[0];
+								updatedProps.imgProps = {
+									alt: '',
+									src: url[0],
+								};
+							}
+							else if (item.embedded?.file?.thumbnailURL) {
+								updatedProps.image =
+									item.embedded.file.thumbnailURL;
+							}
+
+							if (item.embedded?.title) {
+								updatedProps.title = item.embedded.title;
+							}
+							else {
+								updatedProps.title = item.title;
+							}
+
+							return updatedProps;
 						},
 						thumbnail: 'cards2',
 					},
-
 					{
 						contentRenderer: 'table',
 						label: Liferay.Language.get('table'),
@@ -296,6 +355,7 @@ function NewItemSelectorModal({
 						schema: {
 							fields: [
 								{
+									contentRenderer: 'cmsTitleCellRenderer',
 									fieldName: 'embedded.title',
 									label: Liferay.Language.get('title'),
 								},
@@ -307,11 +367,41 @@ function NewItemSelectorModal({
 									fieldName: 'embedded.file.name',
 									label: Liferay.Language.get('file-name'),
 								},
-								{
+							],
+						},
+						setItemComponentProps: ({item, props}) => {
+							if (
+								item.entryClassName ===
+								OBJECT_ENTRY_FOLDER_CLASS_NAME
+							) {
+								return {
+									...props,
+									onClick: (e: {
+										preventDefault: () => void;
+									}) => {
+										e.preventDefault();
+									},
+									onSelectChange: null,
+								};
+							}
+							const newItems = props.items.filter(
+								(field: any) => field.fieldName !== 'select'
+							);
+
+							if (item.embedded?.scopeKey) {
+								newItems.push({
 									fieldName: 'embedded.scopeKey',
 									label: Liferay.Language.get('space'),
-								},
-							],
+								});
+							}
+							else {
+								newItems.push({
+									fieldName: 'embedded.scopeKey',
+									label: Liferay.Language.get('scope'),
+								});
+							}
+
+							return props;
 						},
 						thumbnail: 'table',
 					},

@@ -52,11 +52,9 @@ export function ImageSelector({
 		}
 	}, [open]);
 
-	const onUploadFile = async (file) => {
-
-		// logic to upload a file
-
+	const onUploadFile = async (file, dropTarget) => {
 		console.log(file);
+		console.log(dropTarget);
 	};
 
 	return selectedViewportSize === VIEWPORT_SIZES.desktop ? (
@@ -116,15 +114,22 @@ export function ImageSelector({
 					items={items}
 					observer={observer}
 					onItemsChange={(items) => {
-						const item = {
-							classNameId: items[0].embedded.id,
-							classPK: String(items[0].embedded.file.id),
-							fileEntryId: String(items[0].embedded.file.id),
-							title: String(items[0].embedded.title),
-							url: String(items[0].embedded.file.link),
-						};
-
 						console.log(items[0]);
+
+						const id = items[0].embedded.id;
+						const fileId = items[0].embedded?.file?.id ?? id;
+						const title = items[0].embedded.title ?? items[0].title;
+						const url =
+							items[0].embedded?.file?.link ??
+							items[0].embedded.contentUrl;
+
+						const item = {
+							classNameId: id,
+							classPK: String(fileId),
+							fileEntryId: String(fileId),
+							title,
+							url,
+						};
 
 						onImageSelected(item);
 						setItems([]);
