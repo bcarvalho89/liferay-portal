@@ -6,11 +6,10 @@
 import ClayIcon from '@clayui/icon';
 import ClayLink from '@clayui/link';
 import ClaySticker from '@clayui/sticker';
-import {ClayTooltipProvider} from '@clayui/tooltip';
 import {replaceTokens} from '@liferay/frontend-data-set-web';
-import {sub} from 'frontend-js-web';
 import React, {useMemo} from 'react';
 
+import SharedFromTooltip from '../../../common/components/SharedFromTooltip';
 import {OBJECT_ENTRY_FOLDER_CLASS_NAME} from '../../../common/utils/constants';
 
 interface ActionItem {
@@ -97,21 +96,7 @@ export default function SharedItemRenderer({
 				<span>{title}</span>
 			)}
 
-			{siteName && (
-				<ClayTooltipProvider>
-					<ClaySticker
-						className="flex-shrink-0"
-						data-tooltip-align="top"
-						displayType="unstyled"
-						title={sub(
-							Liferay.Language.get('shared-from-x'),
-							`"${siteName}"`
-						)}
-					>
-						<ClayIcon className="text-secondary" symbol="users" />
-					</ClaySticker>
-				</ClayTooltipProvider>
-			)}
+			{siteName && <SharedFromTooltip siteName={siteName} />}
 		</span>
 	);
 }
