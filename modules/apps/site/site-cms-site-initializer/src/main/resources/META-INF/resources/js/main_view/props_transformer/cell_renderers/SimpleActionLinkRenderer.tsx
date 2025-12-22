@@ -10,6 +10,7 @@ import {replaceTokens} from '@liferay/frontend-data-set-web';
 import classNames from 'classnames';
 import React from 'react';
 
+import SharedFromTooltip from '../../../common/components/SharedFromTooltip';
 import {OBJECT_ENTRY_FOLDER_CLASS_NAME} from '../../../common/utils/constants';
 import {getFileMimeTypeObjectDefinitionStickerValue} from '../utils/transformViewsItemProps';
 
@@ -36,6 +37,12 @@ export default function SimpleActionLinkRenderer({
 	options: {actionId: string};
 	value: string;
 }) {
+	const isSharedItem =
+		itemData.embedded?.creator?.id &&
+		String(itemData.embedded.creator.id) !==
+			Liferay.ThemeDisplay.getUserId();
+	const siteName = itemData.embedded?.scopeKey;
+
 	const {actionId} = options;
 	const title =
 		value && value !== '' ? value : Liferay.Language.get('untitled-asset');
@@ -60,7 +67,7 @@ export default function SimpleActionLinkRenderer({
 	const formattedHref = replaceTokens(selectedAction.href, itemData);
 
 	return (
-		<div className="align-items-center d-flex table-list-title">
+		<div className="align-items-center c-gap-2 d-flex table-list-title">
 			{additionalProps && (
 				<ClaySticker
 					className={classNames(
@@ -107,6 +114,8 @@ export default function SimpleActionLinkRenderer({
 					/>
 				)}
 			</ClayLink>
+
+			{isSharedItem && <SharedFromTooltip siteName={siteName} />}
 		</div>
 	);
 }
