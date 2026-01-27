@@ -8,6 +8,18 @@ import {IBulkActionFDSData} from '../types/BulkActionTask';
 import {Tag} from '../types/Tag';
 import ApiHelper from './ApiHelper';
 
+async function getTags(cmsGroupId: number | string) {
+	const {data, error} = await ApiHelper.get<{items: Tag[]}>(
+		`/o/headless-admin-taxonomy/v1.0/sites/${cmsGroupId}/keywords`
+	);
+
+	if (data) {
+		return data;
+	}
+
+	throw new Error(error);
+}
+
 async function createTag({
 	assetLibraryId,
 	cmsGroupId,
@@ -17,6 +29,10 @@ async function createTag({
 	cmsGroupId: number | string;
 	name: string;
 }) {
+	const tags = await getTags(cmsGroupId);
+	const tagFound = tags?.items?.find((tag: Tag) => tag.name === name);
+	const url = `/o/headless-admin-taxonomy/v1.0/sites/${cmsGroupId}/keywords`;
+
 	let requestBody;
 
 	if (assetLibraryId === null || assetLibraryId === undefined) {
@@ -29,10 +45,15 @@ async function createTag({
 		};
 	}
 
-	return await ApiHelper.post<Tag>(
-		`/o/headless-admin-taxonomy/v1.0/sites/${cmsGroupId}/keywords`,
-		requestBody
-	);
+	if (tagFound) {
+		if (assetLibraryId) {
+			return ApiHelper.patch<Tag>(requestBody, url);
+		}
+
+		return {data: tagFound, error: null, status: null};
+	}
+
+	return ApiHelper.post<Tag>(url, requestBody);
 }
 
 async function getCommonTags(selectedData: IBulkActionFDSData) {
@@ -45,4 +66,5 @@ async function getCommonTags(selectedData: IBulkActionFDSData) {
 export default {
 	createTag,
 	getCommonTags,
+	getTags,
 };
