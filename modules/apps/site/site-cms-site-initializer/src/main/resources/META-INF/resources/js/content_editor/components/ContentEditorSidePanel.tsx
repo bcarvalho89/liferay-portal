@@ -27,7 +27,7 @@ import SchedulePanel from './panels/SchedulePanel';
 
 type Props = {
 	addCommentURL: string;
-	assetLibraryId: string;
+	assetLibraryName: string;
 	assetType: number;
 	cmsGroupId: string;
 	comments: Comment[];

@@ -21,11 +21,11 @@ async function getTags(cmsGroupId: number | string) {
 }
 
 async function createTag({
-	assetLibraryId,
+	assetLibraryName,
 	cmsGroupId,
 	name,
 }: {
-	assetLibraryId: number | string | null | undefined;
+	assetLibraryName: number | string | null | undefined;
 	cmsGroupId: number | string;
 	name: string;
 }) {
@@ -35,18 +35,18 @@ async function createTag({
 
 	let requestBody;
 
-	if (assetLibraryId === null || assetLibraryId === undefined) {
+	if (assetLibraryName === null || assetLibraryName === undefined) {
 		requestBody = {name};
 	}
 	else {
 		requestBody = {
-			assetLibraries: [{id: assetLibraryId}],
+			assetLibraries: [{scopeKey: assetLibraryName}],
 			name,
 		};
 	}
 
 	if (tagFound) {
-		if (assetLibraryId) {
+		if (assetLibraryName) {
 			return ApiHelper.patch<Tag>(requestBody, url);
 		}
 

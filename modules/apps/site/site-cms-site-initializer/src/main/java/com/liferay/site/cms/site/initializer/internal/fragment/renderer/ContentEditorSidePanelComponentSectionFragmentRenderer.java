@@ -145,7 +145,7 @@ public class ContentEditorSidePanelComponentSectionFragmentRenderer
 				return null;
 			}
 		).put(
-			"assetLibraryId", objectEntry.getGroupId()
+			"assetLibraryName", objectEntry.getGroupId() // WE NEED TO PASS THE NAME INSTEAD OF ID
 		).put(
 			"assetType", classNameId
 		).put(

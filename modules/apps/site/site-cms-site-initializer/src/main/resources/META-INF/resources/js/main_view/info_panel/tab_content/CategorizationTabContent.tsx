@@ -113,7 +113,7 @@ const CategorizationTabContent = () => {
 			/>
 
 			<AssetTags
-				assetLibraryId={assetLibrary.groupId}
+				assetLibraryName={assetLibrary.name}
 				cmsGroupId={cmsGroupId}
 				hasUpdatePermission={hasUpdatePermission}
 				objectEntry={currentAsset}

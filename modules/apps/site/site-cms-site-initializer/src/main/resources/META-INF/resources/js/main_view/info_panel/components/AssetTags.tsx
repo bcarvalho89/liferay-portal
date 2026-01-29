@@ -19,7 +19,7 @@ type TKeyword = {
 };
 
 const AssetTags = ({
-	assetLibraryId,
+	assetLibraryName,
 	cmsGroupId,
 	collapsable = true,
 	hasUpdatePermission,
@@ -27,7 +27,7 @@ const AssetTags = ({
 	objectEntry,
 	updateObjectEntry,
 }: {
-	assetLibraryId?: number | string | null | undefined;
+	assetLibraryName?: string | null | undefined;
 	cmsGroupId: number | string;
 	collapsable?: boolean;
 	hasUpdatePermission?: boolean;
@@ -37,23 +37,23 @@ const AssetTags = ({
 }) => {
 	const [value, setValue] = useState('');
 
-	const scopeId = useMemo(
+	const scopeKey = useMemo(
 		() =>
-			(objectEntry as IAssetObjectEntry).scopeId ||
-			assetLibraryId ||
+			(objectEntry as IAssetObjectEntry).scopeKey ||
+			assetLibraryName ||
 			cmsGroupId,
-		[assetLibraryId, cmsGroupId, objectEntry]
+		[assetLibraryName, cmsGroupId, objectEntry]
 	);
 
 	const apiURL = useMemo(() => {
 		const baseURL = `${Liferay.ThemeDisplay.getPortalURL()}/o/headless-admin-taxonomy/v1.0/sites`;
 
-		if (scopeId >= 0) {
-			return `${baseURL}/${scopeId}/keywords`;
+		if (typeof scopeKey === 'number' && scopeKey >= 0) {
+			return `${baseURL}/${scopeKey}/keywords`;
 		}
 
-		return `${baseURL}/${cmsGroupId}/keywords?filter=groupIds in ('${scopeId}')`;
-	}, [cmsGroupId, scopeId]);
+		return `${baseURL}/${cmsGroupId}/keywords?filter=groupIds in ('${scopeKey}')`; // WE NEED TO PROPERLY FILTER BY SCOPE_KEY
+	}, [cmsGroupId, scopeKey]);
 
 	const addKeyword = useCallback(
 		async (keyword: TKeyword) => {
@@ -75,7 +75,7 @@ const AssetTags = ({
 
 	const createAndAddKeyword = useCallback(async () => {
 		const {data, error} = await TagService.createTag({
-			assetLibraryId: scopeId,
+			assetLibraryName: scopeKey,
 			cmsGroupId,
 			name: value,
 		});
@@ -88,7 +88,7 @@ const AssetTags = ({
 		else if (error) {
 			console.error('Failed to create new keyword.', error);
 		}
-	}, [addKeyword, cmsGroupId, scopeId, value]);
+	}, [addKeyword, cmsGroupId, scopeKey, value]);
 
 	const removeKeyword = useCallback(
 		async (keyword: string) => {

@@ -13,7 +13,7 @@ import {
 } from '../ContentEditorSidePanel';
 
 export default function CategorizationPanel({
-	assetLibraryId,
+	assetLibraryName,
 	assetType,
 	categorizationFields,
 	cmsGroupId,
@@ -21,7 +21,7 @@ export default function CategorizationPanel({
 	hasUpdatePermission,
 	onUpdateCategorization,
 }: {
-	assetLibraryId: number | string;
+	assetLibraryName: string;
 	assetType: number;
 	categorizationFields: CategorizationFields;
 	cmsGroupId: number | string;
@@ -56,7 +56,7 @@ export default function CategorizationPanel({
 	return (
 		<div className="px-3">
 			<AssetCategorization
-				assetLibraryId={assetLibraryId}
+				assetLibraryName={assetLibraryName}
 				categorization={{
 					keywords: assetTagNames.value,
 					systemProperties: {
