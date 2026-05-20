@@ -10,7 +10,7 @@
  */
 
 module.exports = {
-	hash: '5fa062d41a6b1b034a7f3c4311b7f4bc285eebba4fd95a0dbd33736a920d78b1',
+	hash: 'e1fc76112cfc260b03dab1ce30c4f4e522b76157e8b83306aed3aad7bd7ec7da',
 	imports: {
 		'@liferay/accessibility-menu-web': [],
 		'@liferay/accessibility-settings-state-web': [],
@@ -185,7 +185,11 @@ module.exports = {
 		'@liferay/frontend-js-importmaps-extender': [],
 		'@liferay/frontend-js-item-selector-sample-web': [],
 		'@liferay/frontend-js-item-selector-web': [],
-		'@liferay/frontend-js-pintura-image-editor-web': [],
+		'@liferay/frontend-js-pintura-image-editor-web': [
+			'@pqina/pintura',
+			'@pqina/pintura/pintura.css',
+			'@pqina/react-pintura',
+		],
 		'@liferay/frontend-js-react-web': [
 			'classnames',
 			'formik',
